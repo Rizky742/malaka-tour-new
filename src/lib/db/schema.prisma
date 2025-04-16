@@ -1,0 +1,180 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  password      String?
+  role          String          @default("user")
+  no_hp         String?
+  alamat        String?
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  // Optional for WebAuthn support
+  Authenticator Authenticator[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Pemesanan Pemesanan[]
+
+  Anggota Anggota[]
+
+  Tabungan Tabungan[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, credentialID])
+}
+
+model Anggota {
+  id            Int      @id @default(autoincrement())
+  user_id       String
+  user          User     @relation(fields: [user_id], references: [id])
+  nama          String   @db.VarChar(50)
+  tanggal_lahir DateTime @db.Date
+  jenis_kelamin String   @db.Char(1)
+  hubungan      String   @db.VarChar(10)
+  no_hp         String   @db.VarChar(13)
+}
+
+model Fasilitas {
+  id   Int    @id @default(autoincrement())
+  nama String @db.VarChar(20)
+
+  Detail_Fasilitas Detail_Fasilitas[]
+}
+
+model Tour_Guide {
+  id    Int    @id @default(autoincrement())
+  nama  String @db.VarChar(20)
+  no_hp String @db.VarChar(13)
+
+  Paket Paket[]
+}
+
+model Maskapai {
+  id   Int    @id @default(autoincrement())
+  nama String @db.VarChar(20)
+
+  Paket Paket[]
+}
+
+model Tabungan {
+  id                 Int                  @id @default(autoincrement())
+  user_id            String
+  user               User                 @relation(fields: [user_id], references: [id])
+  saldo              Decimal              @db.Decimal(15, 2)
+  status             String               @db.VarChar(10)
+  tanggal_mulai      DateTime             @db.Date
+  tanggal_akhir      DateTime             @db.Date
+  tipe_cicilan       String               @db.VarChar(10)
+  Transaksi_Tabungan Transaksi_Tabungan[]
+}
+
+model Transaksi_Tabungan {
+  id          Int      @id @default(autoincrement())
+  tabungan_id Int
+  tabungan    Tabungan @relation(fields: [tabungan_id], references: [id])
+}
+
+model Paket {
+  id            Int        @id @default(autoincrement())
+  maskapai_id   Int
+  maskapai      Maskapai   @relation(fields: [maskapai_id], references: [id])
+  tour_guide_id Int
+  tour_guide    Tour_Guide @relation(fields: [tour_guide_id], references: [id])
+
+  Detail_Fasilitas Detail_Fasilitas[]
+
+  Pemesanan Pemesanan[]
+}
+
+model Detail_Fasilitas {
+  paket_id     Int
+  fasilitas_id Int
+  paket        Paket     @relation(fields: [paket_id], references: [id])
+  fasilitas    Fasilitas @relation(fields: [fasilitas_id], references: [id])
+
+  @@id([paket_id, fasilitas_id])
+}
+
+model Pemesanan {
+  id                Int      @id @default(autoincrement())
+  user_id           String
+  paket_id          Int
+  user              User     @relation(fields: [user_id], references: [id])
+  paket             Paket    @relation(fields: [paket_id], references: [id])
+  jumlah_orang      Int
+  tanggal_pemesanan DateTime @db.Date
+
+  Transaksi_Pembayaran Transaksi_Pembayaran[]
+}
+
+model Transaksi_Pembayaran {
+  id                 Int       @id @default(autoincrement())
+  pemesanan_id       Int
+  pemesanan          Pemesanan @relation(fields: [pemesanan_id], references: [id])
+  jumlah_pembayaran  Int
+  tanggal_pembayaran DateTime
+}
