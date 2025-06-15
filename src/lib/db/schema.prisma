@@ -1,24 +1,31 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TypeTabungan {
+  bulan
+  minggu
+}
+
 model User {
-  id            String          @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String          @unique
+  email         String    @unique
   password      String?
-  role          String          @default("user")
+  role          String    @default("user")
   no_hp         String?
   alamat        String?
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
+
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
@@ -114,8 +121,9 @@ model Tour_Guide {
 }
 
 model Maskapai {
-  id   Int    @id @default(autoincrement())
-  nama String @db.VarChar(20)
+  id        Int     @id @default(autoincrement())
+  nama      String  @db.VarChar(20)
+  deskripsi String? @db.VarChar(20)
 
   Paket Paket[]
 }
@@ -128,26 +136,61 @@ model Tabungan {
   status             String               @db.VarChar(10)
   tanggal_mulai      DateTime             @db.Date
   tanggal_akhir      DateTime             @db.Date
-  tipe_cicilan       String               @db.VarChar(10)
+  tipe_cicilan       TypeTabungan
   Transaksi_Tabungan Transaksi_Tabungan[]
 }
 
 model Transaksi_Tabungan {
   id          Int      @id @default(autoincrement())
   tabungan_id Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   tabungan    Tabungan @relation(fields: [tabungan_id], references: [id])
 }
 
 model Paket {
-  id            Int        @id @default(autoincrement())
-  maskapai_id   Int
-  maskapai      Maskapai   @relation(fields: [maskapai_id], references: [id])
-  tour_guide_id Int
-  tour_guide    Tour_Guide @relation(fields: [tour_guide_id], references: [id])
-
+  id               Int                @id @default(autoincrement())
+  nama             String
+  maskapai_id      Int
+  hotel_madinah_id Int
+  hotel_mekkah_id  Int
+  tipe_kamar_id    Int
+  tour_guide_id    Int
+  harga            Int
+  tour_guide       Tour_Guide         @relation(fields: [tour_guide_id], references: [id])
+  tipe_kamar       Tipe_Kamar         @relation(fields: [tipe_kamar_id], references: [id])
+  maskapai         Maskapai           @relation(fields: [maskapai_id], references: [id])
+  hotel_madinah    Hotel              @relation("HotelMadinah", fields: [hotel_madinah_id], references: [id])
+  hotel_mekkah     Hotel              @relation("HotelMekkah", fields: [hotel_mekkah_id], references: [id])
   Detail_Fasilitas Detail_Fasilitas[]
+  Pemesanan        Pemesanan[]
 
-  Pemesanan Pemesanan[]
+  Tanggal_Kebarangkatan Tanggal_Kebarangkatan[]
+}
+
+model Hotel {
+  id      Int    @id @default(autoincrement())
+  nama    String
+  bintang String
+
+  Paket Paket[] @relation("HotelMadinah")
+
+  Paket2 Paket[] @relation("HotelMekkah")
+}
+
+model Tanggal_Kebarangkatan {
+  id       Int      @id @default(autoincrement())
+  paket_id Int
+  paket    Paket    @relation(fields: [paket_id], references: [id])
+  tanggal  DateTime
+}
+
+model Tipe_Kamar {
+  id   Int     @id @default(autoincrement())
+  nama String
+  desc String?
+
+  Paket Paket[]
 }
 
 model Detail_Fasilitas {

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { CreditCard, DollarSign, Users, Clock } from "lucide-react";
+import { useQuery } from "@tanstack/react-query"; // pastikan sudah di-import
 
 type Pelanggan = {
   id: number;
@@ -11,26 +12,26 @@ type Pelanggan = {
 };
 
 export default function DashboardAdminPage() {
-  // Simulasi data pelanggan
-  const pelangganList: Pelanggan[] = [
-    { id: 1, nama: "Andi", sudahBayarBulanIni: true, jumlahBayarBulanIni: 500000 },
-    { id: 2, nama: "Budi", sudahBayarBulanIni: false, jumlahBayarBulanIni: 0 },
-    { id: 3, nama: "Cici", sudahBayarBulanIni: true, jumlahBayarBulanIni: 750000 },
-    { id: 4, nama: "Dina", sudahBayarBulanIni: true, jumlahBayarBulanIni: 300000 },
-    { id: 5, nama: "Eko", sudahBayarBulanIni: false, jumlahBayarBulanIni: 0 },
-  ];
+  // Ambil hanya data pelanggan
+  const { data = [] } = useQuery<Pelanggan[]>({
+    queryKey: ["users", "pelanggan"],
+    queryFn: async () => {
+      const response = await fetch("http://localhost:3000/api/users?role=user");
+      const json = await response.json();
+      return json.data;
+    },
+  });
 
   // Perhitungan statistik
-  const totalPelanggan = pelangganList.length;
+  const totalPelanggan = data.length;
 
   const pemasukanBulanIni = useMemo(
-    () =>
-      pelangganList.reduce((total, p) => total + p.jumlahBayarBulanIni, 0),
-    [pelangganList]
+    () => data.reduce((total, p) => total + p.jumlahBayarBulanIni, 0),
+    [data]
   );
 
-  const jumlahYangBayar = pelangganList.filter((p) => p.sudahBayarBulanIni).length;
-  const jumlahBelumBayar = pelangganList.filter((p) => !p.sudahBayarBulanIni).length;
+  const jumlahYangBayar = data.filter((p) => p.sudahBayarBulanIni).length;
+  const jumlahBelumBayar = data.filter((p) => !p.sudahBayarBulanIni).length;
 
   return (
     <div className="px-4 md:px-20 py-8 space-y-8">

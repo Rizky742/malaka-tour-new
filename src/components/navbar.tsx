@@ -18,7 +18,7 @@ export default function Navbar() {
 
 
   const { data: session } = useSession();
-  console.log(session)
+  // console.log(session)
   const role = session?.user?.role;
 
   let menuItems: any[] = [];
@@ -29,15 +29,15 @@ export default function Navbar() {
       menuItems = [
         { name: "Dashboard", url: "/dashboard" },
         // { name: "Layanan", url: "/dashboard/layanan" },
-        { name: "Pelanggan", url: "/dashboard/pelanggan" },
+        { name: "Users", url: "/dashboard/users" },
         { name: "Tour Guide", url: "/dashboard/tour-guide" },
         { name: "Maskapai", url: "/dashboard/maskapai" },
         { name: "Paket", url: "/dashboard/paket" },
       ];
     } else if (role === "user") {
       menuItems = [
-        { name: "Beranda", url: "/dashboard" },
-        { name: "Layanan", url: "/dashboard/layanan" },
+        { name: "Tabungan", url: "/dashboard" },
+        // { name: "Layanan", url: "/dashboard/layanan" },
       ];
     }
   } else {

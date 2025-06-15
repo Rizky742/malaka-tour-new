@@ -10,15 +10,35 @@ export default function PembayaranCicilan() {
   const jumlahCicilan = 2500000; // Bisa ambil dari props, context, fetch, dsb
   const [metode, setMetode] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Simulasi pembayaran
-    console.log("Pembayaran:", { jumlah: jumlahCicilan, metode });
-
-    // Arahkan ke halaman sukses
-    router.push("/dashboard/transaksi-berhasil");
+  
+    try {
+      const res = await fetch("/api/transaction", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ first_name: "rizky", last_name : "ardiansyah", email: "rizkyardiansyah967@gmail.com", phone: "081249142352", "amount" : 500000}),
+      });
+  
+      if (!res.ok) throw new Error("Gagal membuat transaksi");
+  
+      const data = await res.json();
+      console.log("Transaction result:", data);
+  
+      // Redirect ke Midtrans payment page
+      if (data?.redirect_url) {
+        window.location.href = data.redirect_url;
+      } else {
+        router.push("/dashboard/transaksi-berhasil");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat memproses pembayaran");
+    }
   };
+  
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
