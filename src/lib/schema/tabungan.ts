@@ -6,7 +6,7 @@ export const CreateTabungan = z.object({
   status: z.string(),
   tanggal_mulai: date(),
   tanggal_akhir: date(),
-  tipe_cicilan: z.string()
+  tipe_cicilan: z.enum(["bulan", "minggu"]),
 });
 
 
