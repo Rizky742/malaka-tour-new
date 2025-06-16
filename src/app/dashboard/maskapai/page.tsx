@@ -31,7 +31,7 @@ export default function MaskapaiPage() {
   const { data: maskapaiList = [], isPending } = useQuery({
     queryKey: ["maskapai"],
     queryFn: async () => {
-      const response = await fetch("http://localhost:3000/api/maskapai");
+      const response = await fetch("/api/maskapai");
       return response.json();
     },
   });
@@ -46,7 +46,7 @@ export default function MaskapaiPage() {
       nama: string;
       deskripsi: string;
     }) => {
-      const res = await fetch("http://localhost:3000/api/maskapai", {
+      const res = await fetch("/api/maskapai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -66,7 +66,7 @@ export default function MaskapaiPage() {
 
   const updateMutation = useMutation({
       mutationFn: async (data: Maskapai) => {
-        const res = await fetch(`http://localhost:3000/api/maskapai/${data.id}`, {
+        const res = await fetch(`/api/maskapai/${data.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -84,7 +84,7 @@ export default function MaskapaiPage() {
   
     const deleteMutation = useMutation({
       mutationFn: async (id: number) => {
-        await fetch(`http://localhost:3000/api/maskapai/${id}`, {
+        await fetch(`/api/maskapai/${id}`, {
           method: "DELETE",
         });
       },

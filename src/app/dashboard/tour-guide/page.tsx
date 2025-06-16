@@ -21,7 +21,7 @@ export default function TourGuidePage() {
   const { data: tourGuideList = [], isPending } = useQuery({
     queryKey: ["tour_guide"],
     queryFn: async () => {
-      const response = await fetch("http://localhost:3000/api/tour-guide");
+      const response = await fetch("/api/tour-guide");
       return response.json();
     },
   });
@@ -29,7 +29,7 @@ export default function TourGuidePage() {
   // POST new tour guide
   const createMutation = useMutation({
     mutationFn: async (data: { nama: string; no_hp: string }) => {
-      const res = await fetch("http://localhost:3000/api/tour-guide", {
+      const res = await fetch("/api/tour-guide", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -44,7 +44,7 @@ export default function TourGuidePage() {
   // PUT update tour guide
   const updateMutation = useMutation({
     mutationFn: async (data: TourGuide) => {
-      const res = await fetch(`http://localhost:3000/api/tour-guide/${data.id}`, {
+      const res = await fetch(`/api/tour-guide/${data.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nama: data.nama, no_hp: data.no_hp }),
@@ -59,7 +59,7 @@ export default function TourGuidePage() {
   // DELETE tour guide
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      await fetch(`http://localhost:3000/api/tour-guide/${id}`, {
+      await fetch(`/api/tour-guide/${id}`, {
         method: "DELETE",
       });
     },

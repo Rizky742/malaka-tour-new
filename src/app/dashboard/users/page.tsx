@@ -31,7 +31,7 @@ export default function PelangganPage() {
   const { data: pelangganList = [], isPending } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      const response = await fetch("http://localhost:3000/api/users");
+      const response = await fetch("/api/users");
       return response.json();
     },
   });
@@ -58,7 +58,7 @@ export default function PelangganPage() {
       alamat?: string;
       no_hp: string;
     }) => {
-      const res = await fetch("http://localhost:3000/api/users", {
+      const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -85,7 +85,7 @@ export default function PelangganPage() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: Pelanggan) => {
-      const res = await fetch(`http://localhost:3000/api/users/${data.id}`, {
+      const res = await fetch(`/api/users/${data.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -106,7 +106,7 @@ export default function PelangganPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      await fetch(`http://localhost:3000/api/users/${id}`, {
+      await fetch(`/api/users/${id}`, {
         method: "DELETE",
       });
     },
