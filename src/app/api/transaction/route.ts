@@ -1,13 +1,20 @@
 import { z } from "zod";
-import createTransaction from "@/lib/midtrans/transaction";
+import midtransClient from "midtrans-client";
 
-// Skema validasi
 const TransactionSchema = z.object({
-  first_name: z.string().min(1, "Nama depan wajib diisi"),
-  last_name: z.string().min(1, "Nama belakang wajib diisi"),
-  email: z.string().email("Email tidak valid"),
-  phone: z.string().min(8, "Nomor telepon tidak valid"),
-  amount: z.number().min(1000, "Jumlah tidak boleh kurang dari 1000"),
+  orderId: z.string().min(1, "Order ID wajib diisi"),
+  grossAmount: z.number().min(1000, "Jumlah tidak boleh kurang dari 1000"),
+  customer: z.object({
+    first_name: z.string().min(1, "Nama depan wajib diisi"),
+    last_name: z.string().optional(), // Kalau gak ada last_name di frontend bisa optional
+    email: z.string().email("Email tidak valid").optional(),
+    phone: z.string().min(8, "Nomor telepon tidak valid"),
+  }),
+});
+
+const snap = new midtransClient.Snap({
+  isProduction: false,
+  serverKey: process.env.MIDTRANS_SERVER_KEY!,
 });
 
 export async function POST(request: Request) {
@@ -15,29 +22,28 @@ export async function POST(request: Request) {
     const body = await request.json();
     const parsed = TransactionSchema.parse(body);
 
-    const { first_name, last_name, email, phone, amount } = parsed;
-
+    const { orderId, grossAmount, customer } = parsed;
 
     const params = {
       transaction_details: {
-        order_id: `ORD-${Date.now()}`,
-        gross_amount: amount,
+        order_id: orderId,
+        gross_amount: grossAmount,
       },
       customer_details: {
-        first_name,
-        last_name,
-        email,
-        phone,
+        first_name: customer.first_name,
+        last_name: customer.last_name || "",
+        email: customer.email || "",
+        phone: customer.phone,
       },
       payment_type: "bank_transfer",
-      bank_transfer:{
-      bank: "bca"
-  }
-
+      bank_transfer: {
+        bank: "bca",
+      },
     };
-    console.log(params)
 
-    const transaction = await createTransaction(params);
+    console.log("Midtrans Params:", params);
+
+    const transaction = await snap.createTransaction(params);
 
     return new Response(
       JSON.stringify(transaction),
@@ -49,15 +55,21 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error(err);
     if (err instanceof z.ZodError) {
-      return new Response(JSON.stringify({ error: err.errors }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: err.errors }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
-    return new Response(JSON.stringify({ error: "Transaction failed" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: "Transaction failed" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }

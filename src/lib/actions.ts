@@ -19,7 +19,7 @@ export const signUpCredentials = async (prevstate: unknown,formData: FormData) =
     };
   }
   
-  const {name, email, noHp, alamat, password} = validatedFields.data
+  const {name, email, password} = validatedFields.data
   console.log(name,email)
   
   
@@ -30,8 +30,8 @@ export const signUpCredentials = async (prevstate: unknown,formData: FormData) =
         data: {
             name,
             email,
-            no_hp : noHp,
-            alamat,
+            // no_hp : noHp,
+            // alamat,
             password: hashedPassword,
         }
     })

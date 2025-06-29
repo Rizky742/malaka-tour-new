@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const CreateMaskapai = z.object({
   nama: z.string().min(1),
-  deskripsi : z.string().min(1).max(13)
+  deskripsi : z.string().min(1)
 });
 
 

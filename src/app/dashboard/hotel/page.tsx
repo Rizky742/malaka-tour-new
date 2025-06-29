@@ -14,22 +14,22 @@ import {
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
 
-type Maskapai = {
+type Hotel = {
   id: number;
   nama: string;
   deskripsi: string;
 };
 
-export default function MaskapaiPage() {
+export default function HotelPage() {
   const queryClient = useQueryClient();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<Maskapai | null>(null);
+  const [editing, setEditing] = useState<Hotel | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const { data: maskapaiList = [], isPending } = useQuery({
-    queryKey: ["maskapai"],
+  const { data: hotelList = [], isPending } = useQuery({
+    queryKey: ["hotel"],
     queryFn: async () => {
-      const response = await fetch("/api/maskapai");
+      const response = await fetch("/api/hotel");
       return response.json();
     },
   });
@@ -44,7 +44,7 @@ export default function MaskapaiPage() {
       nama: string;
       deskripsi: string;
     }) => {
-      const res = await fetch("/api/maskapai", {
+      const res = await fetch("/api/hotel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -52,13 +52,13 @@ export default function MaskapaiPage() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["maskapai"] });
+      queryClient.invalidateQueries({ queryKey: ["hotel"] });
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (data: Maskapai) => {
-      const res = await fetch(`/api/maskapai/${data.id}`, {
+    mutationFn: async (data: Hotel) => {
+      const res = await fetch(`/api/hotel/${data.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -69,18 +69,18 @@ export default function MaskapaiPage() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["maskapai"] });
+      queryClient.invalidateQueries({ queryKey: ["hotel"] });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      await fetch(`/api/maskapai/${id}`, {
+      await fetch(`/api/hotel/${id}`, {
         method: "DELETE",
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["maskapai"] });
+      queryClient.invalidateQueries({ queryKey: ["hotel"] });
     },
   });
 
@@ -90,7 +90,7 @@ export default function MaskapaiPage() {
     setModalOpen(true);
   };
 
-  const openEditModal = (data: Maskapai) => {
+  const openEditModal = (data: Hotel) => {
     setFormData({
       nama: data.nama,
       deskripsi: data.deskripsi,
@@ -135,7 +135,7 @@ export default function MaskapaiPage() {
                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                   <tr>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Maskapai</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama hotel</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Deskripsi</th>
                     <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
                   </tr>
@@ -175,14 +175,14 @@ export default function MaskapaiPage() {
             <div className="p-2 bg-blue-600 rounded-lg">
               <Plane className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Daftar Maskapai</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Daftar Hotel</h1>
           </div>
           <button
             onClick={openCreateModal}
             className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2 transform hover:scale-105"
           >
             <Plus size={20} />
-            Tambah Maskapai
+            Tambah Hotel
           </button>
         </div>
 
@@ -191,7 +191,7 @@ export default function MaskapaiPage() {
           <div className="p-6 border-b border-gray-100">
             <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
               <Plane className="h-5 w-5 text-blue-600" />
-              Data Maskapai Penerbangan
+              Data Hotel
             </h2>
           </div>
           
@@ -203,7 +203,7 @@ export default function MaskapaiPage() {
                     No
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Nama Maskapai
+                    Nama Hotel
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Deskripsi
@@ -214,7 +214,7 @@ export default function MaskapaiPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {maskapaiList.data?.length === 0 ? (
+                {hotelList.data?.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center gap-4">
@@ -222,14 +222,14 @@ export default function MaskapaiPage() {
                           <Plane className="h-8 w-8 text-gray-400" />
                         </div>
                         <div>
-                          <p className="text-lg font-medium text-gray-500">Belum ada data maskapai</p>
-                          <p className="text-sm text-gray-400">Tambahkan maskapai baru untuk memulai</p>
+                          <p className="text-lg font-medium text-gray-500">Belum ada data hotel</p>
+                          <p className="text-sm text-gray-400">Tambahkan hotel baru untuk memulai</p>
                         </div>
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  maskapaiList.data?.map((m: Maskapai, i: number) => (
+                  hotelList.data?.map((m: Hotel, i: number) => (
                     <tr key={m.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
@@ -277,7 +277,7 @@ export default function MaskapaiPage() {
               <div className="flex items-center justify-between p-6 border-b border-gray-100">
                 <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
                   <Plane className="h-5 w-5 text-blue-600" />
-                  {editing ? "Edit Maskapai" : "Tambah Maskapai"}
+                  {editing ? "Edit Hotel" : "Tambah Hotel"}
                 </h2>
                 <button
                   onClick={() => setModalOpen(false)}
@@ -290,14 +290,14 @@ export default function MaskapaiPage() {
               <form onSubmit={handleSubmit} className="p-6 space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nama Maskapai
+                    Nama hotel
                   </label>
                   <input
                     name="nama"
                     value={formData.nama}
                     onChange={handleChange}
                     required
-                    placeholder="Masukkan nama maskapai"
+                    placeholder="Masukkan nama hotel"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
                 </div>
@@ -312,7 +312,7 @@ export default function MaskapaiPage() {
                     onChange={handleChange}
                     required
                     rows={4}
-                    placeholder="Masukkan deskripsi maskapai"
+                    placeholder="Masukkan deskripsi hotel"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
                   />
                 </div>
@@ -349,7 +349,7 @@ export default function MaskapaiPage() {
                 Konfirmasi Hapus
               </AlertDialogTitle>
               <AlertDialogDescription className="text-gray-600">
-                Apakah Anda yakin ingin menghapus data maskapai ini? 
+                Apakah Anda yakin ingin menghapus data hotel ini? 
                 Tindakan ini tidak dapat dibatalkan dan akan menghapus data secara permanen.
               </AlertDialogDescription>
             </AlertDialogHeader>

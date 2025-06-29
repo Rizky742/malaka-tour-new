@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   title: "Malaka Tour Travel",
   description: "Umroh Travel Agent",
 };
+// console.log('test')
 
 export default function RootLayout({
   children,

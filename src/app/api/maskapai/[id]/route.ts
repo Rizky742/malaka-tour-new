@@ -22,7 +22,7 @@ export async function GET(
     //
 
     const maskapai = await prisma.maskapai.findUnique({
-      where: { id: Number(id) },
+      where: { id},
     });
 
     return NextResponse.json(
@@ -59,7 +59,7 @@ export async function PUT(
     const { nama, deskripsi }: CreateMaskapaiSchemeType = body;
 
     const maskapai = await prisma.maskapai.update({
-      where: { id: Number(id) },
+      where: { id },
       data: { nama, deskripsi },
     });
 
@@ -80,7 +80,7 @@ export async function DELETE(request: NextRequest,{ params }: { params: Promise<
     const param = await params;
     const id = param.id;
 
-    await prisma.maskapai.delete({ where: { id: Number(id) } });
+    await prisma.maskapai.delete({ where: { id} });
 
     return NextResponse.json(
       {

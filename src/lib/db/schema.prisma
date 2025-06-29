@@ -3,14 +3,37 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 enum TypeTabungan {
   bulan
   minggu
+}
+
+enum JenisKelamin {
+  L
+  P
+}
+
+enum StatusPendaftaran {
+  aktif
+  batal
+  selesai
+}
+
+enum StatusAnggota {
+  aktif
+  batal
+}
+
+enum StatusTransaksi {
+  pending
+  verifikasi
+  ditolak
+  settlement
 }
 
 model User {
@@ -19,8 +42,6 @@ model User {
   email         String    @unique
   password      String?
   role          String    @default("user")
-  no_hp         String?
-  alamat        String?
   emailVerified DateTime?
   image         String?
   accounts      Account[]
@@ -32,11 +53,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Pemesanan Pemesanan[]
-
-  Anggota Anggota[]
-
-  Tabungan Tabungan[]
+  pendaftaran PendaftaranUmroh[]
+  tabungan    Tabungan[]
+  jemaah      Jemaah[]
 }
 
 model Account {
@@ -94,130 +113,113 @@ model Authenticator {
   @@id([userId, credentialID])
 }
 
-model Anggota {
-  id            Int      @id @default(autoincrement())
-  user_id       String
-  user          User     @relation(fields: [user_id], references: [id])
-  nama          String   @db.VarChar(50)
-  tanggal_lahir DateTime @db.Date
-  jenis_kelamin String   @db.Char(1)
-  hubungan      String   @db.VarChar(10)
-  no_hp         String   @db.VarChar(13)
+model PendaftaranUmroh {
+  id                  String            @id @default(cuid())
+  user_id             String
+  paket_id            String
+  tanggal_pendaftaran DateTime          @default(now())
+  status              StatusPendaftaran @default(aktif)
+
+  user    User                 @relation(fields: [user_id], references: [id])
+  paket   Paket                @relation(fields: [paket_id], references: [id])
+  anggota PendaftaranAnggota[]
 }
 
-model Fasilitas {
-  id   Int    @id @default(autoincrement())
-  nama String @db.VarChar(20)
+model PendaftaranAnggota {
+  id             String        @id @default(cuid())
+  pendaftaran_id String
+  jemaah_id      String
+  tipe_kamar     String
+  status         StatusAnggota @default(aktif)
 
-  Detail_Fasilitas Detail_Fasilitas[]
+  pendaftaran PendaftaranUmroh @relation(fields: [pendaftaran_id], references: [id])
+  jemaah      Jemaah           @relation(fields: [jemaah_id], references: [id])
 }
 
-model Tour_Guide {
-  id    Int    @id @default(autoincrement())
-  nama  String @db.VarChar(20)
-  no_hp String @db.VarChar(13)
+model Jemaah {
+  id            String       @id @default(cuid())
+  user_id       String? // opsional, hanya jika dia login
+  nama          String
+  tanggal_lahir DateTime
+  jenis_kelamin JenisKelamin
+  no_hp         String
 
-  Paket Paket[]
-}
-
-model Maskapai {
-  id        Int     @id @default(autoincrement())
-  nama      String  @db.VarChar(20)
-  deskripsi String? @db.VarChar(20)
-
-  Paket Paket[]
-}
-
-model Tabungan {
-  id                 Int                  @id @default(autoincrement())
-  user_id            String
-  user               User                 @relation(fields: [user_id], references: [id])
-  saldo              Decimal              @db.Decimal(15, 2)
-  status             String               @db.VarChar(10)
-  tanggal_mulai      DateTime             @db.Date
-  tanggal_akhir      DateTime             @db.Date
-  tipe_cicilan       TypeTabungan
-  Transaksi_Tabungan Transaksi_Tabungan[]
-}
-
-model Transaksi_Tabungan {
-  id          Int      @id @default(autoincrement())
-  tabungan_id Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  tabungan    Tabungan @relation(fields: [tabungan_id], references: [id])
+  user    User?                @relation(fields: [user_id], references: [id])
+  anggota PendaftaranAnggota[]
 }
 
 model Paket {
-  id               Int                @id @default(autoincrement())
-  nama             String
-  maskapai_id      Int
-  hotel_madinah_id Int
-  hotel_mekkah_id  Int
-  tipe_kamar_id    Int
-  tour_guide_id    Int
-  harga            Int
-  tour_guide       Tour_Guide         @relation(fields: [tour_guide_id], references: [id])
-  tipe_kamar       Tipe_Kamar         @relation(fields: [tipe_kamar_id], references: [id])
-  maskapai         Maskapai           @relation(fields: [maskapai_id], references: [id])
-  hotel_madinah    Hotel              @relation("HotelMadinah", fields: [hotel_madinah_id], references: [id])
-  hotel_mekkah     Hotel              @relation("HotelMekkah", fields: [hotel_mekkah_id], references: [id])
-  Detail_Fasilitas Detail_Fasilitas[]
-  Pemesanan        Pemesanan[]
+  id                    String   @id @default(cuid())
+  nama                  String
+  image_url             String
+  maskapai_id           String
+  hotel_madinah_id      String
+  hotel_mekkah_id       String
+  durasi                String
+  deskripsi             String
+  tanggal_keberangkatan DateTime
 
-  Tanggal_Kebarangkatan Tanggal_Kebarangkatan[]
+  hotel_madinah Hotel    @relation("HotelMadinah", fields: [hotel_madinah_id], references: [id])
+  hotel_mekkah  Hotel    @relation("HotelMekkah", fields: [hotel_mekkah_id], references: [id])
+  maskapai      Maskapai @relation(fields: [maskapai_id], references: [id])
+
+  pendaftaran PendaftaranUmroh[]
+  paket_kamar PaketKamar[]
+  tabungan    Tabungan[]
+}
+
+model PaketKamar {
+  id         String @id @default(cuid())
+  paket_id   String
+  tipe_kamar String // 'quad', 'triple', 'double'
+  total_pax  Int
+  harga      Int
+
+  paket Paket @relation(fields: [paket_id], references: [id], onDelete: Cascade)
 }
 
 model Hotel {
-  id      Int    @id @default(autoincrement())
-  nama    String
-  bintang String
+  id        String @id @default(cuid())
+  nama      String
+  bintang   String
+  location  String
+  image_url String
 
-  Paket Paket[] @relation("HotelMadinah")
-
-  Paket2 Paket[] @relation("HotelMekkah")
+  madinahPackages Paket[] @relation("HotelMadinah")
+  mekkahPackages  Paket[] @relation("HotelMekkah")
 }
 
-model Tanggal_Kebarangkatan {
-  id       Int      @id @default(autoincrement())
-  paket_id Int
-  paket    Paket    @relation(fields: [paket_id], references: [id])
-  tanggal  DateTime
+model Maskapai {
+  id        String  @id @default(cuid())
+  nama      String
+  deskripsi String?
+
+  paket Paket[]
 }
 
-model Tipe_Kamar {
-  id   Int     @id @default(autoincrement())
-  nama String
-  desc String?
+model Tabungan {
+  id            String       @id @default(cuid())
+  user_id       String
+  paket_id      String
+  status        String       @default("aktif")
+  tanggal_mulai DateTime
+  tanggal_akhir DateTime
+  tipe_cicilan  TypeTabungan
 
-  Paket Paket[]
+  user      User                @relation(fields: [user_id], references: [id])
+  paket     Paket               @relation(fields: [paket_id], references: [id])
+  transaksi TransaksiTabungan[]
 }
 
-model Detail_Fasilitas {
-  paket_id     Int
-  fasilitas_id Int
-  paket        Paket     @relation(fields: [paket_id], references: [id])
-  fasilitas    Fasilitas @relation(fields: [fasilitas_id], references: [id])
+model TransaksiTabungan {
+  id                String          @id @default(cuid())
+  tabungan_id       String
+  tanggal_setor     DateTime        @default(now())
+  jumlah            Int
+  status_pembayaran StatusTransaksi @default(pending)
+  bukti_transfer    String? // untuk pembayaran manual (opsional)
+  midtrans_order_id String? // dari Snap token
+  midtrans_status   String? // e.g. "settlement", "expire", dll
 
-  @@id([paket_id, fasilitas_id])
-}
-
-model Pemesanan {
-  id                Int      @id @default(autoincrement())
-  user_id           String
-  paket_id          Int
-  user              User     @relation(fields: [user_id], references: [id])
-  paket             Paket    @relation(fields: [paket_id], references: [id])
-  jumlah_orang      Int
-  tanggal_pemesanan DateTime @db.Date
-
-  Transaksi_Pembayaran Transaksi_Pembayaran[]
-}
-
-model Transaksi_Pembayaran {
-  id                 Int       @id @default(autoincrement())
-  pemesanan_id       Int
-  pemesanan          Pemesanan @relation(fields: [pemesanan_id], references: [id])
-  jumlah_pembayaran  Int
-  tanggal_pembayaran DateTime
+  tabungan Tabungan @relation(fields: [tabungan_id], references: [id])
 }
